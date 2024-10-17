@@ -55,21 +55,23 @@ def main():
       if args.language == 'vietnamese':
         large_t5_version = 'VietAI/vit5-large'
         base_t5_version = 'VietAI/vit5-base'
+        num_labels = 3
 
       elif args.language == 'english' :
         large_t5_version = 'google/flan-t5-large'
         large_t5_version = 'google/flan-t5-base'
+        num_labels = 2
 
       # Teacher
-      teacher_model = CustomModel(t5_version = large_t5_version, num_labels = 3)
+      teacher_model = CustomModel(t5_version = large_t5_version, num_labels = num_labels)
       tokenizer = AutoTokenizer.from_pretrained(large_t5_version)
 
       # Student
       if args.student_type == 'base':
-        student_model = CustomModel(t5_version = base_t5_version, num_labels = 3)
+        student_model = CustomModel(t5_version = base_t5_version, num_labels = num_labels)
       elif args.student_type == 'large':
         from model.t5_model import CustomT5_FromLarge
-        student_model = CustomT5_FromLarge(num_labels = 3, num_blocks = 6, t5_version = large_t5_version)
+        student_model = CustomT5_FromLarge(num_labels = num_labels, num_blocks = 6, t5_version = large_t5_version)
 
       # Optimizer
       optimizer = torch.optim.AdamW(student_model.parameters(), weight_decay=0.01, lr = 2e-05)
@@ -82,16 +84,16 @@ def main():
       roberta_base = 'FacebookAI/roberta-base'
 
       # Teacher
-      teacher_model = TeacherModel(model_name = roberta_large, num_labels = 3)
+      teacher_model = TeacherModel(model_name = roberta_large, num_labels = num_labels)
       tokenizer = teacher_model.tokenizer
 
       # Student
       if args.student_type == 'base':
-        student_model = TeacherModel(model_name = roberta_base, num_labels = 3)
+        student_model = TeacherModel(model_name = roberta_base, num_labels = num_labels)
 
       elif args.student_type == 'large':
         from model.roberta_model import CustomRoberta_FromLarge
-        student_model = CustomRoberta_FromLarge(num_labels = 3, num_blocks = 6, roberta_version = roberta_large)
+        student_model = CustomRoberta_FromLarge(num_labels = num_labels, num_blocks = 6, roberta_version = roberta_large)
 
       # Optimizer
       optimizer = torch.optim.Adam(params=student_model.parameters(), lr=args.lr, betas=(0.9, 0.98), weight_decay=args.weight_decay)
