@@ -81,6 +81,12 @@ def main():
       optimizer = torch.optim.AdamW(student_model.parameters(), weight_decay=0.01, lr = 2e-05)
 
     elif args.teacher_name == 'Roberta':
+        
+      if args.language == 'vietnamese' : num_labels = 3
+      else : num_labels = 2
+          
+      print('Num Labels: ', num_labels)
+        
       from model.roberta_model import TeacherModel
 
       # Roberta Version
