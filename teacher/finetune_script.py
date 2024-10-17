@@ -50,10 +50,14 @@ def main():
 
       print(f'USE T5 MODEL')
 
-      if args.language == 'vietnamese': t5_version = 'VietAI/vit5-large'
-      elif args.language == 'english' : t5_version = 'google/flan-t5-large'
+      if args.language == 'vietnamese': 
+          t5_version = 'VietAI/vit5-large'
+          num_labels = 3
+      elif args.language == 'english' : 
+          t5_version = 'google/flan-t5-large'
+          num_labels = 2
 
-      teacher_model = CustomModel(t5_version = t5_version, num_labels = 3)
+      teacher_model = CustomModel(t5_version = t5_version, num_labels = num_labels)
       tokenizer = AutoTokenizer.from_pretrained(t5_version)
       optimizer = torch.optim.AdamW(teacher_model.parameters(), weight_decay=0.01, lr = 2e-05)
 
@@ -61,7 +65,7 @@ def main():
       from model.roberta_model import TeacherModel
 
       print(f'USE ROBERTA-XLM MODEL')
-      teacher_model = TeacherModel(model_name = 'FacebookAI/roberta-large', num_labels = 3)
+      teacher_model = TeacherModel(model_name = 'FacebookAI/roberta-large', num_labels = num_labels)
       tokenizer = teacher_model.tokenizer
       optimizer = torch.optim.Adam(params=teacher_model.parameters(), lr=args.lr, betas=(0.9, 0.98), weight_decay=args.weight_decay)
 
