@@ -99,7 +99,8 @@ def training_student(student_model, teacher_model,
         test_metrics_list.append(val_metrics)
 
         # Step the scheduler
-        scheduler.step(val_loss)
+        # scheduler.step(val_loss)
+        scheduler.step()
 
         # Early Stopping
         early_stopping(val_loss, student_model)
