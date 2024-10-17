@@ -49,6 +49,7 @@ def main():
     parser.add_argument('--hard_weight', type=float)
     args = parser.parse_args()
 
+    num_labels = 1
     if args.teacher_name == 'T5':
       from model.t5_model import CustomModel
 
@@ -61,7 +62,10 @@ def main():
         large_t5_version = 'google/flan-t5-large'
         large_t5_version = 'google/flan-t5-base'
         num_labels = 2
-
+          
+      print('Language: ', args.language)
+      print('Num Labels: ', num_labels)
+        
       # Teacher
       teacher_model = CustomModel(t5_version = large_t5_version, num_labels = num_labels)
       tokenizer = AutoTokenizer.from_pretrained(large_t5_version)
