@@ -49,7 +49,8 @@ def main():
       from model.t5_model import CustomModel
 
       print(f'USE T5 MODEL')
-
+      num_labels = 1
+        
       if args.language == 'vietnamese': 
           t5_version = 'VietAI/vit5-large'
           num_labels = 3
@@ -57,6 +58,9 @@ def main():
           t5_version = 'google/flan-t5-large'
           num_labels = 2
 
+      print('Language: ', args.language)
+      print('Num Labels: ', num_labels)
+        
       teacher_model = CustomModel(t5_version = t5_version, num_labels = num_labels)
       tokenizer = AutoTokenizer.from_pretrained(t5_version)
       optimizer = torch.optim.AdamW(teacher_model.parameters(), weight_decay=0.01, lr = 2e-05)
