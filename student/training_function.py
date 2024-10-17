@@ -27,7 +27,7 @@ def step(student_model, teacher_model, dataloader, optimizer, criterion, device,
     metrics_epoch = {'acc': 0, 'precision': 0, 'recall': 0, 'f1': 0}
 
     for batch in tqdm(dataloader):
-        input_ids, attention_mask = batch['input_ids'].to(device), batch['attention_mask'].to(device)
+        input_ids, attention_mask = batch['input_ids'].long().to(device), batch['attention_mask'].long().to(device)
         labels = batch['labels'].to(device)
 
         if mode == 'Train': optimizer.zero_grad()
