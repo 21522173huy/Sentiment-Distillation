@@ -20,7 +20,7 @@ def evaluate_model(model, test_dataloader, average = 'micro', save_score_path='e
 
     with torch.no_grad():
         for batch in tqdm(test_dataloader):
-            input_ids, attention_mask = batch['input_ids'].to('cuda'), batch['attention_mask'].to('cuda')
+            input_ids, attention_mask = batch['input_ids'].to('cuda'), batch['attention_mask'].float().to('cuda')
             labels = batch['labels'].to('cuda')
 
             # Predictions from the teacher model
