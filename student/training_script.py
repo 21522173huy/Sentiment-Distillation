@@ -48,6 +48,7 @@ def main():
     parser.add_argument('--weight_decay', type=float, default=1e-3)
     parser.add_argument('--soft_weight', type=float)
     parser.add_argument('--hard_weight', type=float)
+    parser.add_argument('--init_weight', type=bool, default = False)
     args = parser.parse_args()
 
     num_labels = 1
@@ -104,7 +105,7 @@ def main():
 
       elif args.student_type == 'large':
         from model.roberta_model import CustomRoberta_FromLarge
-        student_model = CustomRoberta_FromLarge(num_labels = num_labels, num_blocks = 6, roberta_version = roberta_large)
+        student_model = CustomRoberta_FromLarge(num_labels = num_labels, num_blocks = 6, roberta_version = roberta_large, init_weight = args.init_weight)
 
       # Optimizer
       optimizer = torch.optim.Adam(params=student_model.parameters(), lr=args.lr, betas=(0.9, 0.98), weight_decay=args.weight_decay)
