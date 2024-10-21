@@ -86,4 +86,4 @@ class CustomRoberta_FromLarge(nn.Module):
         for layer in self.layers:
             embedding_output = layer(embedding_output, attention_mask=attention_mask)[0]
 
-        return self.classifier(embedding_output[:, 0, :]) 
+        return self.classifier(embedding_output) 
