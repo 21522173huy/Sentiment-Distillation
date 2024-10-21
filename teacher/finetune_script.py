@@ -105,7 +105,8 @@ def main():
                                                                           optimizer=optimizer,
                                                                           criterion=criterion,
                                                                           scheduler=scheduler,
-                                                                          save_path = f'teacher/checkpoints/{args.teacher_name}-Teacher-best.pt',
+                                                                          checkpoint_path = f'teacher/checkpoints/{args.teacher_name}-Teacher-best.pt',
+                                                                          result_path = f'teacher/checkpoints/{args.teacher_name}-Teacher-results.json',
                                                                           max_grad_norm=1.0,
                                                                           epochs=args.epochs,
                                                                           patience=5)

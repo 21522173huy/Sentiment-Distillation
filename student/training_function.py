@@ -68,7 +68,8 @@ def step(student_model, teacher_model, dataloader, optimizer, criterion, device,
 def training_student(student_model, teacher_model,
                      train_dataloader, val_dataloader, test_dataloader,
                      optimizer, criterion, scheduler, epochs,
-                     save_path = 'checkpoint_best.pt', max_grad_norm=1.0, patience=5,
+                     checkpoint_path = 'checkpoint_best.pt', result_path = 'results.json',
+                     max_grad_norm=1.0, patience=5,
                      temperature=2.0, soft_weight=0.5, hard_weight=0.5):
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -78,10 +79,10 @@ def training_student(student_model, teacher_model,
     train_losses, test_losses = [], []
     train_metrics_list, test_metrics_list = [], []
     best_checkpoint_path = None
-    best_f1_score = float(0)
+    best_f1_score = float(-1)
 
     # Initialize EarlyStopping
-    early_stopping = EarlyStopping(patience=patience, verbose=True, path=save_path)
+    early_stopping = EarlyStopping(patience=patience, verbose=True, path=checkpoint_path)
 
     for epoch in range(epochs):
         # Loss and Metrics
@@ -117,7 +118,18 @@ def training_student(student_model, teacher_model,
         # Save best F1-Score checkpoint
         if results['f1_score'] > best_f1_score:
             best_f1_score = results['f1_score']
-            torch.save(student_model.state_dict(), save_path)
+            torch.save({
+                'model_state_dict': student_model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, checkpoint_path)
+
+            import json
+            with open(result_path, 'w') as f:
+                json.dump({
+                    'results': results,
+                    'y_true': y_true,
+                    'y_pred': y_pred,
+                }, f, indent=4)
 
         # Stop
         if early_stopping.early_stop:

@@ -44,7 +44,11 @@ def step(model, dataloader, optimizer, criterion, device, max_grad_norm=1.0, mod
 
     return avg_loss, avg_metrics
 
-def finetune_teacher(teacher_model, train_dataloader, val_dataloader, test_dataloader, optimizer, criterion, scheduler, epochs, save_path, max_grad_norm=1.0, patience=5):
+def finetune_teacher(teacher_model, 
+                     train_dataloader, val_dataloader, test_dataloader, 
+                     optimizer, criterion, scheduler, epochs, 
+                     checkpoint_path, result_path,
+                     max_grad_norm=1.0, patience=5):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     teacher_model.to(device)
 
@@ -53,7 +57,7 @@ def finetune_teacher(teacher_model, train_dataloader, val_dataloader, test_datal
 
     best_f1_score = float(0)
     # Initialize EarlyStopping
-    early_stopping = EarlyStopping(patience=patience, verbose=True, path=save_path)
+    early_stopping = EarlyStopping(patience=patience, verbose=True, path=checkpoint_path)
 
     for epoch in range(epochs):
         # Loss and Metrics
@@ -62,7 +66,7 @@ def finetune_teacher(teacher_model, train_dataloader, val_dataloader, test_datal
         print("Validating")
         val_loss, val_metrics = step(teacher_model, val_dataloader, optimizer, criterion, device, max_grad_norm, mode='Val')
         print('Testing')
-        results, _, _ = evaluate_model(teacher_model, test_dataloader, average = 'micro')
+        results, y_true, y_pred = evaluate_model(teacher_model, test_dataloader, average = 'micro')
 
         # Obtain Loss and Metrics
         train_losses.append(train_loss)
@@ -89,7 +93,18 @@ def finetune_teacher(teacher_model, train_dataloader, val_dataloader, test_datal
         # Save Best F1-score checkpoint
         if results['f1_score'] > best_f1_score:
             best_f1_score = results['f1_score']
-            torch.save(teacher_model.state_dict(), save_path)
+            torch.save({
+                'model_state_dict': teacher_model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, checkpoint_path)
+            
+            import json
+            with open(result_path, 'w') as f:
+                json.dump({
+                    'results': results,
+                    'y_true': y_true,
+                    'y_pred': y_pred,
+                }, f, indent=4)
 
         # Stop
         if early_stopping.early_stop:

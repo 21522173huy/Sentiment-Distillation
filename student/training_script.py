@@ -41,6 +41,7 @@ def main():
     parser.add_argument('--teacher_checkpoint', type=str, required=True)
     parser.add_argument('--student_type', choices=['large', 'base'], type=str, default = 'base')
     parser.add_argument('--language', choices=['vietnamese', 'english'], type=str, default = 'vietnamese')
+    parser.add_argument('--student_checkpoint', type=str, default=None, help='Path to student model checkpoint')
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--lr', type=float, default=3e-04)
@@ -119,13 +120,20 @@ def main():
     sample = next(iter(train_dataloader))
     print(tokenizer.decode(sample.input_ids[0], skip_special_tokens = True))
 
+    if args.student_checkpoint:
+        checkpoint = torch.load(args.student_checkpoint)
+        student_model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        # Replace scheduler with a new learning rate
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
+    else:
+        # Scheduler with warm-up and linear decay
+        num_training_steps = args.epochs * len(train_dataloader)
+        num_warmup_steps = 10000
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)
+
     # Finetuning Config
     criterion = nn.CrossEntropyLoss()
-
-    # Scheduler with warm-up and linear decay
-    num_training_steps = args.epochs * len(train_dataloader)
-    num_warmup_steps = 10000
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)
 
     # Finetuning
     type_in_path = 'Base' if args.student_type == 'base' else 'Large'
@@ -142,7 +150,8 @@ def main():
                                                                           scheduler=scheduler,
                                                                           max_grad_norm=1.0,
                                                                           epochs=args.epochs,
-                                                                          save_path = f'student/checkpoints/{type_in_path}-Student-{args.teacher_name}-{int(args.soft_weight * 100)}{int(args.hard_weight * 100)}-best.pt',
+                                                                          checkpoint_path = f'student/checkpoints/{type_in_path}-Student-{args.teacher_name}-{int(args.soft_weight * 100)}{int(args.hard_weight * 100)}-best.pt',
+                                                                          result_path = f'student/checkpoints/{type_in_path}-Student-{args.teacher_name}-{int(args.soft_weight * 100)}{int(args.hard_weight * 100)}-results.json',
                                                                           patience=5,
                                                                           temperature=2,
                                                                           soft_weight=args.soft_weight,
